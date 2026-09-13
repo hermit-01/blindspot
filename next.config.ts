@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // The dev badge sits over the report box and lands in demo screenshots.
+  devIndicators: false,
 };
 
 export default nextConfig;
