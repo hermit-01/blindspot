@@ -21,10 +21,10 @@ import type { ScoredCell } from "@/lib/types";
  */
 
 const COLOUR = {
-  served: "#78857a",
-  reported: "#8f6a12",
-  unknown: "#351c75",
-  ink: "#221d14",
+  served: "#87907a",
+  reported: "#5b2e2f",
+  unknown: "#e86d41",
+  ink: "#141f28",
 };
 
 interface Props {
@@ -179,12 +179,12 @@ export default function MapPanelGL({
               type: "raster",
               source: "osm",
               // Basemap is context, not content - drain it and drop it back so
-              // the cream ground shows through. Mirrors the CSS filter on the
+              // the sage ground shows through. Mirrors the CSS filter on the
               // SVG map's tiles.
               paint: {
-                "raster-saturation": -0.97,
-                "raster-contrast": -0.12,
-                "raster-opacity": 0.34,
+                "raster-saturation": -0.98,
+                "raster-contrast": -0.14,
+                "raster-opacity": 0.32,
               },
             },
           ],
