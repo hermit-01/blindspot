@@ -43,29 +43,42 @@ export function scoreCells(
 
   return cells.map((cell) => {
     const mine = byCell.get(cell.h3) ?? [];
-    const verified = mine.filter((r) => r.confidence >= VERIFIED_AT);
+
+    // Contact is anything we heard. Coverage is only a delivery we believe.
+    // A village telling us it is cut off is contact, and it must not clear the
+    // gap it is reporting.
+    const covering = mine.filter(
+      (r) => r.kind === "delivery" && r.confidence >= VERIFIED_AT
+    );
 
     const lastAt = mine.length ? Math.max(...mine.map((r) => r.at)) : null;
     const hoursSinceContact =
       lastAt === null ? null : (now - lastAt) / 3600_000;
 
+    const lastCoveredAt = covering.length
+      ? Math.max(...covering.map((r) => r.at))
+      : null;
+    const hoursSinceCoverage =
+      lastCoveredAt === null ? null : (now - lastCoveredAt) / 3600_000;
+
     let state: ScoredCell["state"];
     if (mine.length === 0) {
       state = "unknown";
     } else if (
-      verified.length > 0 &&
-      hoursSinceContact !== null &&
-      hoursSinceContact <= COVERAGE_HALF_LIFE_HOURS
+      hoursSinceCoverage !== null &&
+      hoursSinceCoverage <= COVERAGE_HALF_LIFE_HOURS
     ) {
       state = "served";
     } else {
       state = "reported";
     }
 
+    // Measured from the last delivery, not the last message: an unanswered
+    // call for help must not push a place down the queue for being heard.
     const silence =
-      hoursSinceContact === null
+      hoursSinceCoverage === null
         ? 1
-        : Math.min(hoursSinceContact / SILENCE_CEILING_HOURS, 1);
+        : Math.min(hoursSinceCoverage / SILENCE_CEILING_HOURS, 1);
 
     const people = Math.min(cell.population / POP_CEILING, 1);
 
