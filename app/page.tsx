@@ -9,6 +9,13 @@ const MapPanel = dynamicImport(() => import("@/components/MapPanel"), {
   ssr: false,
 });
 
+// maplibre draws the map. The hand-drawn SVG panel above is kept as a working
+// fallback - ?map=svg switches to it if anything goes wrong with WebGL on the
+// day. See components/MapPanelGL.tsx for why maplibre needs setWorkerUrl here.
+const MapPanelGL = dynamicImport(() => import("@/components/MapPanelGL"), {
+  ssr: false,
+});
+
 /*
  * The demo, in three clicks. Vellarimala is top of the gap list and has no
  * reports at all, so the first sample moves it off the list entirely, and the
@@ -37,6 +44,13 @@ export default function Page() {
   const [merged, setMerged] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Both panels are ssr:false, so the server renders neither and reading the
+  // query string in the initialiser cannot desync hydration.
+  const [useSvgMap] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("map") === "svg",
+  );
   const listRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -212,12 +226,21 @@ export default function Page() {
         </div>
 
         <div className="mapWrap">
-          <MapPanel
-            cells={ranked}
-            outline={snap?.outline ?? []}
-            selected={selected}
-            onSelect={setSelected}
-          />
+          {useSvgMap ? (
+            <MapPanel
+              cells={ranked}
+              outline={snap?.outline ?? []}
+              selected={selected}
+              onSelect={setSelected}
+            />
+          ) : (
+            <MapPanelGL
+              cells={ranked}
+              outline={snap?.outline ?? []}
+              selected={selected}
+              onSelect={setSelected}
+            />
+          )}
           <span className="attribution">© OpenStreetMap contributors</span>
 
           {current && (
