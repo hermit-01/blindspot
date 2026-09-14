@@ -18,10 +18,10 @@ const TILE = 256;
 const Z = 11;
 
 const COLOUR = {
-  served: "#8c978d",
-  reported: "#a8801a",
+  served: "#78857a",
+  reported: "#8f6a12",
   unknown: "#351c75",
-  ink: "#191d19",
+  ink: "#221d14",
 };
 
 function lngToPx(lng: number): number {

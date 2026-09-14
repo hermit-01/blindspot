@@ -7,18 +7,27 @@
  */
 
 :root {
-  --paper: #edf0ec;
-  --panel: #ffffff;
-  --ink: #191d19;
-  --muted: #6c746d;
-  --rule: #d3dad4;
-  --rule-strong: #b4bdb6;
+  /* Survey paper, warmed. Long shifts are read off this, so the ground is
+     cream rather than white and the ink is warm near-black to match. */
+  --paper: #f2ead8;
+  --panel: #fbf6ea;
+  --ink: #221d14;
+  --muted: #7c7361;
+  --rule: #e3d9c3;
+  --rule-strong: #cbbda0;
 
-  /* State. Served recedes; unknown is the loudest thing on the page. */
-  --served: #8c978d;
-  --reported: #a8801a;
+  /* State. Served recedes; unknown is the loudest thing on the page.
+     Served and reported are deepened a step to hold their ground on cream. */
+  --served: #78857a;
+  --reported: #8f6a12;
   --unknown: #351c75;
-  --unknown-wash: #eceafa;
+  --unknown-wash: #e9e4f5;
+
+  /* The masthead is the one solid block of colour in the product, and it is
+     the same violet the deck uses for its section titles. */
+  --header: #351c75;
+  --header-ink: #f6f0e2;
+  --header-ink-soft: #bdb0e0;
 
   --radius: 2px;
 }
@@ -79,19 +88,26 @@ select {
   display: flex;
   align-items: baseline;
   gap: 16px;
-  padding: 10px 20px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--rule-strong);
+  padding: 12px 20px;
+  background: var(--header);
+  color: var(--header-ink);
+  border-bottom: none;
+}
+
+/* On the dark band the accent outline disappears, so focus goes pale. */
+.bar :focus-visible {
+  outline-color: var(--header-ink);
 }
 
 .wordmark {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.015em;
+  color: var(--header-ink);
 }
 
 .situation {
-  color: var(--muted);
+  color: var(--header-ink-soft);
   font-size: 13px;
 }
 
@@ -103,13 +119,14 @@ select {
 }
 
 .who {
-  color: var(--muted);
+  color: var(--header-ink-soft);
   font-size: 13px;
 }
 
 select.role {
   background: var(--panel);
-  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+  border: 1px solid transparent;
   border-radius: var(--radius);
   padding: 4px 8px;
   font-size: 13px;
@@ -118,7 +135,7 @@ select.role {
 .reset {
   background: none;
   border: none;
-  color: var(--muted);
+  color: var(--header-ink-soft);
   font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -126,7 +143,7 @@ select.role {
 }
 
 .reset:hover {
-  color: var(--ink);
+  color: var(--header-ink);
 }
 
 /* ---------------------------------------------------------------- body */
@@ -282,8 +299,10 @@ select.role {
 
 /* Basemap is context, not content - drain it and let the hexes carry colour. */
 .tiles {
-  filter: saturate(0.12) contrast(0.92);
-  opacity: 0.5;
+  /* Drained and dropped back far enough for the cream ground to come through,
+     so the map reads as part of the paper rather than a window cut into it. */
+  filter: saturate(0.1) contrast(0.9) sepia(0.22);
+  opacity: 0.36;
 }
 
 .cell {

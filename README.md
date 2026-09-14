@@ -41,7 +41,10 @@ Open <http://localhost:3000> after `npm install && npm run dev`.
   severity, silence and access difficulty. A cell with no reports is *not*
   scored zero; silence is scored at maximum, because "nobody has looked" is
   worse than "someone looked and it was fine". The score's components are
-  returned with it so the UI can explain any ranking.
+  returned with it so the UI can explain any ranking. Coverage is only ever
+  earned by a **delivery**: a village reporting that it is cut off is contact,
+  not care, and the silence term is measured from the last delivery so that
+  being heard never costs a place its position in the queue.
 - **`lib/reconcile.ts` — the Reconciliation Layer.** Resolves free text to a
   cell by fuzzy name match (Levenshtein, tolerance scaled to word length), picks
   out resource and quantity, and scores confidence by how much it could actually
@@ -83,14 +86,24 @@ as a description of the real 2024 Wayanad response.
 Next.js 16 (App Router) · React 19 · TypeScript · [h3-js](https://h3geo.org)
 for the hex grid · OpenStreetMap raster tiles · Public Sans + IBM Plex Mono.
 
-**There is no map library.** The view never pans or zooms, so the hexes are
-projected to Web Mercator by hand (~40 lines in `components/MapPanel.tsx`) and
-drawn as SVG over OSM tiles. This was not the original plan: maplibre-gl v6 was
-installed first, and its GeoJSON sources rendered nothing at all — under both
-Turbopack and webpack, with no console error, while raster layers worked fine.
-Rather than keep bisecting a map engine the demo does not need, it was removed.
-The SVG version has no worker, no WebGL and no version risk, and the unknown
-cells get a real SVG hatch instead of a generated bitmap pattern.
+The map is **maplibre-gl 6.9.0**, pinned exactly. Getting it working took a
+diagnosis worth writing down: v6 no longer inlines its web worker, and resolves
+the worker URL from `import.meta.url`, which under any bundler is not an
+`http(s)` URL — so the lookup returns `""` and no worker is ever constructed.
+GeoJSON is parsed in that worker and raster tiles are not, which is why the
+basemap drew and the hexes never did, silently, with nothing in the console
+because nothing was attempted. The v5→v6 migration guide says it plainly:
+`setWorkerUrl()` is bundler-only.
+
+So `maplibre-gl-worker.mjs` and its sibling chunk are committed to
+`public/maplibre/` and `setWorkerUrl` points at them. Both files are needed —
+the worker is a *module* worker and imports the shared chunk as a sibling — and
+the version is pinned because the two share a minified internal contract.
+
+`components/MapPanel.tsx` is the earlier hand-projected SVG map, kept as a
+working fallback at **`/?map=svg`**: the view never pans or zooms, so
+projecting the hexes to Web Mercator is about forty lines. It needs no worker
+and no WebGL, which makes it the safety net if a demo machine can't run GL.
 
 ## Layout
 
@@ -106,5 +119,22 @@ lib/
   seed.ts             district outline, cell generation, seeded reports
   store.ts            in-memory state and the actions over it
 components/
-  MapPanel.tsx        hand-projected SVG map
+  MapPanelGL.tsx      the map: maplibre over OSM raster tiles
+  MapPanel.tsx        hand-projected SVG fallback, at /?map=svg
+public/maplibre/      maplibre's worker + shared chunk, served to setWorkerUrl
+scripts/
+  check-coverage-rules.mjs   the coverage rules, checked end to end
 ```
+
+## Checks
+
+With the dev server running:
+
+```
+node scripts/check-coverage-rules.mjs
+```
+
+Four rules, because "covered" is the one claim the whole product rests on: a
+delivery covers a cell, **a report of unmet need does not**, asking for help
+must not push a cell down the queue, and the same delivery reported twice is
+counted once.
