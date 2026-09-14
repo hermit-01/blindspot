@@ -7,27 +7,37 @@
  */
 
 :root {
-  /* Survey paper, warmed. Long shifts are read off this, so the ground is
-     cream rather than white and the ink is warm near-black to match. */
-  --paper: #f2ead8;
-  --panel: #fbf6ea;
-  --ink: #221d14;
-  --muted: #7c7361;
-  --rule: #e3d9c3;
-  --rule-strong: #cbbda0;
+  /* Four colours do the whole product: deep navy, pale sage, orange, oxblood.
+     The ground is sage lifted toward cream, because long shifts are read off
+     it; everything else is derived from the same four. */
+  --paper: #e4e5d7;
+  --panel: #f1f1e8;
+  --ink: #141f28;
+  /* Dark enough to clear 4.5:1 on BOTH grounds - the group label sits on the
+     darker paper, not the panel, and only just passed at a lighter step. */
+  --muted: #62675d;
+  --rule: #cfd0bd;
+  --rule-strong: #b3b5a0;
 
-  /* State. Served recedes; unknown is the loudest thing on the page.
-     Served and reported are deepened a step to hold their ground on cream. */
-  --served: #78857a;
-  --reported: #8f6a12;
-  --unknown: #351c75;
-  --unknown-wash: #e9e4f5;
+  /* State. Served recedes into the paper; unknown is the loudest thing on the
+     page, because the gaps are the entire point of the product. */
+  --served: #7c8470;
+  --reported: #5b2e2f;
+  --unknown: #e86d41;
+  --unknown-wash: #f7e2d8;
 
-  /* The masthead is the one solid block of colour in the product, and it is
-     the same violet the deck uses for its section titles. */
-  --header: #351c75;
-  --header-ink: #f6f0e2;
-  --header-ink-soft: #bdb0e0;
+  /* The orange at full chroma is 2.5:1 on this ground - fine for a hexagon,
+     not for a number someone has to read. Text uses a darker step of the same
+     hue; fills and hatching keep the vivid one. */
+  --unknown-ink: #ce613a;
+  /* And a deeper step again for small text, which needs 4.5:1. */
+  --unknown-deep: #a24c2d;
+
+  /* The masthead is the one solid block of colour, and it is the darkest
+     value in the palette so the console reads as sitting under it. */
+  --header: #141f28;
+  --header-ink: #e4e5d7;
+  --header-ink-soft: #97a091;
 
   --radius: 2px;
 }
@@ -61,7 +71,7 @@ select {
 }
 
 :focus-visible {
-  outline: 2px solid var(--unknown);
+  outline: 2px solid var(--unknown-ink);
   outline-offset: 2px;
 }
 
@@ -208,7 +218,7 @@ select.role {
 }
 .swatch.unknown {
   background: var(--unknown-wash);
-  border: 1.5px solid var(--unknown);
+  border: 1.5px solid var(--unknown-ink);
 }
 
 .row {
@@ -226,7 +236,7 @@ select.role {
 }
 
 .row:hover {
-  background: #f6f8f6;
+  background: #f8f8f1;
 }
 
 .row[aria-selected="true"] {
@@ -257,11 +267,13 @@ select.role {
 
 .score {
   font-size: 19px;
-  font-weight: 600;
+  /* 700, not 600: at 19px that clears the WCAG large-text threshold, which is
+     what lets the score keep the orange instead of a muddier dark step. */
+  font-weight: 700;
 }
 
 .row[data-state="unknown"] .score {
-  color: var(--unknown);
+  color: var(--unknown-ink);
 }
 
 .groupLabel {
@@ -299,10 +311,10 @@ select.role {
 
 /* Basemap is context, not content - drain it and let the hexes carry colour. */
 .tiles {
-  /* Drained and dropped back far enough for the cream ground to come through,
+  /* Drained and dropped back far enough for the sage ground to come through,
      so the map reads as part of the paper rather than a window cut into it. */
-  filter: saturate(0.1) contrast(0.9) sepia(0.22);
-  opacity: 0.36;
+  filter: saturate(0.08) contrast(0.88);
+  opacity: 0.34;
 }
 
 .cell {
@@ -319,7 +331,7 @@ select.role {
   bottom: 6px;
   font-size: 11px;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(241, 241, 232, 0.8);
   padding: 1px 6px;
   border-radius: var(--radius);
 }
@@ -369,7 +381,7 @@ select.role {
   width: 100%;
   padding: 8px 10px;
   background: var(--unknown);
-  color: #fff;
+  color: var(--ink);
   border: none;
   border-radius: var(--radius);
   font-size: 14px;
@@ -470,7 +482,7 @@ select.role {
 }
 
 .note.merged {
-  color: var(--unknown);
+  color: var(--unknown-deep);
   font-weight: 600;
 }
 
