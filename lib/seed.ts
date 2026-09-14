@@ -5,6 +5,7 @@ import {
   latLngToCell,
   polygonToCells,
 } from "h3-js";
+import { resolveKind } from "./reconcile";
 import type { Agency, Cell, Report, Resource } from "./types";
 
 /**
@@ -182,6 +183,7 @@ export function seedReports(now: number): Report[] {
     id: `seed-${i + 1}`,
     raw: `${place} - ${quantity} ${resource} delivered`,
     agency,
+    kind: resolveKind(`${place} - ${quantity} ${resource} delivered`),
     cell: byName(place),
     saidPlace: place,
     resource,

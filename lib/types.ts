@@ -27,10 +27,17 @@ export interface Cell {
   boundary: [number, number][];
 }
 
+/**
+ * What a message claims happened. Coverage is only ever earned by a delivery -
+ * a village saying it is cut off is contact, not care.
+ */
+export type ReportKind = "delivery" | "need" | "unclear";
+
 export interface Report {
   id: string;
   raw: string;
   agency: Agency;
+  kind: ReportKind;
   /** h3 of the cell this report resolved to, or null if unresolvable. */
   cell: string | null;
   /** The place name as written by the reporter, before resolution. */

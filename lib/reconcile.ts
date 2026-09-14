@@ -1,4 +1,4 @@
-import type { Cell, Report, Resource } from "./types";
+import type { Cell, Report, ReportKind, Resource } from "./types";
 
 /**
  * Turning what a field volunteer actually typed into a record we can rank on.
@@ -17,6 +17,45 @@ const RESOURCE_WORDS: [Resource, string[]][] = [
 
 /** Same-cell, same-resource reports inside this window are the same event. */
 const DUPLICATE_WINDOW_HOURS = 6;
+
+const DELIVERY_WORDS = [
+  "delivered",
+  "delivery",
+  "distributed",
+  "handed",
+  "given",
+  "supplied",
+  "dropped",
+  "provided",
+  "completed",
+  "done",
+];
+
+const NEED_WORDS = [
+  "need",
+  "needs",
+  "needed",
+  "require",
+  "requires",
+  "required",
+  "requesting",
+  "request",
+  "cut off",
+  "cutoff",
+  "stranded",
+  "trapped",
+  "marooned",
+  "no water",
+  "no food",
+  "running out",
+  "short of",
+  "shortage",
+  "urgent",
+  "urgently",
+  "help",
+  "waiting",
+  "pending",
+];
 
 export function normalise(s: string): string {
   return s
@@ -102,6 +141,25 @@ export function resolveResource(text: string): Resource | null {
   return best ? best.resource : null;
 }
 
+function saysAny(normalised: string, words: string[]): boolean {
+  return words.some((w) => new RegExp(`\\b${w}\\b`).test(normalised));
+}
+
+/**
+ * What the message is claiming.
+ *
+ * Need beats delivery when a message contains both. Counting an unserved place
+ * as served is the one mistake this product exists to prevent, so anything
+ * still asking for something is not coverage - "200 kits delivered, still need
+ * water" leaves the cell open.
+ */
+export function resolveKind(text: string): ReportKind {
+  const n = normalise(text);
+  if (saysAny(n, NEED_WORDS)) return "need";
+  if (saysAny(n, DELIVERY_WORDS)) return "delivery";
+  return "unclear";
+}
+
 export function resolveQuantity(text: string): number | null {
   const match = normalise(text).match(/\b(\d{1,6})\b/);
   return match ? Number(match[1]) : null;
@@ -141,6 +199,7 @@ export function reconcile(
     id: `r-${now}-${Math.random().toString(36).slice(2, 7)}`,
     raw: raw.trim(),
     agency,
+    kind: resolveKind(raw),
     cell: place.cell,
     saidPlace: place.said,
     resource,
@@ -157,7 +216,13 @@ export function reconcile(
   // Same place, same resource, recent enough: one event reported twice.
   const twin = existing
     .filter((r) => !r.mergedInto)
-    .filter((r) => r.cell === report.cell && r.resource === report.resource)
+    // A request for water and a delivery of water are not the same event.
+    .filter(
+      (r) =>
+        r.cell === report.cell &&
+        r.resource === report.resource &&
+        r.kind === report.kind
+    )
     .filter((r) => (now - r.at) / 3600_000 <= DUPLICATE_WINDOW_HOURS)
     .sort((a, b) => b.at - a.at)[0];
 
